@@ -1,36 +1,44 @@
 // src/components/Login.jsx
 import React, { Component } from "react";
 import ApiService from "../services/ApiService";
-import { useNavigate } from "react-router-dom";
 
 class Login extends Component {
-  state = { username: "", password: "", role: "student", error: "" };
+  state = { 
+    username: "", 
+    password: "", 
+    role: "student", 
+    error: "", 
+    showPassword: false // state for toggling password visibility
+  };
 
   handleChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value, error: "" });
+  };
+
+  togglePassword = () => {
+    this.setState((prevState) => ({ showPassword: !prevState.showPassword }));
   };
 
   handleSubmit = async (e) => {
     e.preventDefault();
     const { username, password, role } = this.state;
+
     try {
       const response = await ApiService.login(username, password, role);
+
       if (response.success) {
-        // Redirect based on role
-        if (role === "admin") this.props.navigate("/admindashboard");
-        else this.props.navigate("/studentdashboard");
+        this.props.onLogin(role, response.data);
       } else {
-        alert(response.message); // Wrong credentials
         this.setState({ error: response.message });
       }
     } catch (err) {
-      alert("Server error. Please try again later.");
+      this.setState({ error: "Server error. Please try again later." });
       console.error(err);
     }
   };
 
   render() {
-    const { username, password, role, error } = this.state;
+    const { username, password, role, error, showPassword } = this.state;
 
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
@@ -47,12 +55,12 @@ class Login extends Component {
           </div>
 
           <form onSubmit={this.handleSubmit} className="mt-8 space-y-6">
+            {/* Username */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Username
               </label>
               <input
-                id="username"
                 name="username"
                 type="text"
                 value={username}
@@ -63,28 +71,44 @@ class Login extends Component {
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={this.handleChange}
-                required
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-              />
-            </div>
+<div className="relative">
+  <label className="block text-sm font-medium text-gray-300 mb-1">
+    Password
+  </label>
+  <input
+    name="password"
+    type={showPassword ? "text" : "password"}
+    value={password}
+    onChange={this.handleChange}
+    required
+    placeholder="Enter your password"
+    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+  />
+  {/* Show Password checkbox */}
+  <div className="mt-2 flex items-center">
+    <input
+      type="checkbox"
+      id="showPasswordCheckbox"
+      checked={showPassword}
+      onChange={this.togglePassword}
+      className="mr-2"
+    />
+    <label htmlFor="showPasswordCheckbox" className="text-sm text-gray-300">
+      Show Password
+    </label>
+  </div>
+</div>
 
+
+
+
+
+            {/* Role */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Role
               </label>
               <select
-                id="role"
                 name="role"
                 value={role}
                 onChange={this.handleChange}
@@ -95,7 +119,9 @@ class Login extends Component {
               </select>
             </div>
 
-            {error && <p className="text-red-500 text-center mt-2">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-center mt-2">{error}</p>
+            )}
 
             <button
               type="submit"
@@ -104,21 +130,10 @@ class Login extends Component {
               Sign in
             </button>
           </form>
-
-          <p className="mt-6 text-center text-gray-400 text-sm">
-            Not a member?{" "}
-            <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300">
-              Start a 14 day free trial
-            </a>
-          </p>
         </div>
       </div>
     );
   }
 }
 
-// Wrapper to use navigate in class component
-export default function LoginWithNavigate(props) {
-  const navigate = useNavigate();
-  return <Login {...props} navigate={navigate} />;
-}
+export default Login;

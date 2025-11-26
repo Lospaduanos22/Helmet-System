@@ -1,35 +1,24 @@
-// src/services/ApiService.js
 class ApiService {
-    constructor(baseUrl) {
-        this.baseUrl = baseUrl;
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  async login(username, password, role) {
+    // Updated baseUrl to point to /users since your route is /api/users/login
+    const res = await fetch(`${this.baseUrl}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, role }),
+    });
+
+    // Check if the response is OK before parsing JSON
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    async login(username, password, role) {
-        const res = await fetch(`${this.baseUrl}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password, role })
-        });
-        return await res.json();
-    }
-
-    async createStudent(username, password) {
-        const res = await fetch(`${this.baseUrl}/admin/create-student`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
-        });
-        return await res.json();
-    }
-
-    async changePassword(studentId, newPassword) {
-        const res = await fetch(`${this.baseUrl}/student/change-password`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId, newPassword })
-        });
-        return await res.json();
-    }
+    return await res.json();
+  }
 }
 
-export default new ApiService("http://localhost:5000/api");
+// Update baseUrl to match backend route prefix
+export default new ApiService("http://localhost:5000/api/users");
