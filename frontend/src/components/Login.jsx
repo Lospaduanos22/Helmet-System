@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import React, { Component } from "react";
 import ApiService from "../services/ApiService";
 
@@ -11,14 +10,17 @@ class Login extends Component {
     showPassword: false // state for toggling password visibility
   };
 
+  // Handle input changes for username, password, and role
   handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value, error: "" });
   };
 
+  // Toggle password visibility
   togglePassword = () => {
     this.setState((prevState) => ({ showPassword: !prevState.showPassword }));
   };
 
+  // Handle form submission
   handleSubmit = async (e) => {
     e.preventDefault();
     const { username, password, role } = this.state;
@@ -49,9 +51,7 @@ class Login extends Component {
               alt="Logo"
               className="mx-auto h-12 w-auto"
             />
-            <h2 className="mt-6 text-2xl font-bold text-white">
-              Sign in to your account
-            </h2>
+            <h2 className="mt-6 text-2xl font-bold text-white">Sign in to your account</h2>
           </div>
 
           <form onSubmit={this.handleSubmit} className="mt-8 space-y-6">
@@ -71,37 +71,34 @@ class Login extends Component {
               />
             </div>
 
-<div className="relative">
-  <label className="block text-sm font-medium text-gray-300 mb-1">
-    Password
-  </label>
-  <input
-    name="password"
-    type={showPassword ? "text" : "password"}
-    value={password}
-    onChange={this.handleChange}
-    required
-    placeholder="Enter your password"
-    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-  />
-  {/* Show Password checkbox */}
-  <div className="mt-2 flex items-center">
-    <input
-      type="checkbox"
-      id="showPasswordCheckbox"
-      checked={showPassword}
-      onChange={this.togglePassword}
-      className="mr-2"
-    />
-    <label htmlFor="showPasswordCheckbox" className="text-sm text-gray-300">
-      Show Password
-    </label>
-  </div>
-</div>
-
-
-
-
+            {/* Password */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Password
+              </label>
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={this.handleChange}
+                required
+                placeholder="Enter your password"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              />
+              {/* Show Password checkbox */}
+              <div className="mt-2 flex items-center">
+                <input
+                  type="checkbox"
+                  id="showPasswordCheckbox"
+                  checked={showPassword}
+                  onChange={this.togglePassword}
+                  className="mr-2"
+                />
+                <label htmlFor="showPasswordCheckbox" className="text-sm text-gray-300">
+                  Show Password
+                </label>
+              </div>
+            </div>
 
             {/* Role */}
             <div>
@@ -119,10 +116,10 @@ class Login extends Component {
               </select>
             </div>
 
-            {error && (
-              <p className="text-red-500 text-center mt-2">{error}</p>
-            )}
+            {/* Error message */}
+            {error && <p className="text-red-500 text-center mt-2">{error}</p>}
 
+            {/* Submit button */}
             <button
               type="submit"
               className="w-full py-3 mt-4 bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white font-semibold shadow-md transition"
