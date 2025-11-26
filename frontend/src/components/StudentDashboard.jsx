@@ -1,53 +1,72 @@
+// src/components/StudentDashboard.jsx
 import React, { useState, useEffect } from "react";
 import ApiService from "../services/ApiService";
+import ChangePassword from "./ChangePassword";
 
-export default function StudentDashboard({ studentId }) {
+export default function StudentDashboard({ studentId, onLogout }) {
   const [student, setStudent] = useState(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
 
   useEffect(() => {
     const fetchStudent = async () => {
-      const response = await ApiService.getStudent(studentId);
-      if (response.success) {
-        setStudent(response.student);
-        if (response.student.first_login) setShowChangePassword(true);
+      try {
+        const response = await ApiService.getStudent(studentId);
+        if (response.success) {
+          setStudent(response.student);
+          if (response.student.first_login) setShowChangePassword(true);
+        }
+      } catch (err) {
+        console.error(err);
       }
     };
-    fetchStudent();
+
+    if (studentId) fetchStudent();
   }, [studentId]);
 
-  const handlePasswordChange = async () => {
-    if (newPassword.length < 8) return alert("Password must be at least 8 characters");
-    const response = await ApiService.changePassword(studentId, newPassword);
-    if (response.success) {
-      alert("Password changed!");
-      setShowChangePassword(false);
-    } else alert(response.message);
+  const handlePasswordChanged = () => {
+    setShowChangePassword(false);
+  };
+
+  const handleLogout = () => {
+    if (onLogout) onLogout();
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-3xl text-white">Welcome, {student?.username}</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
+      <div className="w-full max-w-md bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl p-8"><button
+  onClick={handleLogout}
+  className="w-full py-3 mt-6 bg-red-500 hover:bg-red-600 rounded-lg text-white font-semibold shadow-md transition"
+>
+  Logout
+</button>
 
-      {showChangePassword && (
-        <div className="mt-4 p-4 bg-yellow-100 rounded">
-          <p>Please change your password (first login)</p>
-          <input
-            type="password"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full p-2 rounded border"
-          />
-          <button
-            onClick={handlePasswordChange}
-            className="mt-2 bg-indigo-500 text-white p-2 rounded"
-          >
-            Change Password
-          </button>
-        </div>
-      )}
+        {student && (
+          <>
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-white">Hello, {student.username}!</h1>
+              <p className="text-gray-300 mt-1">Welcome to your dashboard</p>
+            </div>
+
+            {showChangePassword ? (
+              <ChangePassword
+                studentId={studentId}
+                onPasswordChanged={handlePasswordChanged}
+              />
+            ) : (
+              <div className="text-center">
+                <p className="text-gray-300">You are logged in.</p>
+              </div>
+            )}
+<button
+  onClick={handleLogout}
+  className="w-full py-3 mt-6 bg-red-500 hover:bg-red-600 rounded-lg text-white font-semibold shadow-md transition"
+>
+  Logout
+</button>
+
+          </>
+        )}
+      </div>
     </div>
   );
 }
