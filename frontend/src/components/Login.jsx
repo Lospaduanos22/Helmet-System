@@ -7,20 +7,17 @@ class Login extends Component {
     password: "", 
     role: "student", 
     error: "", 
-    showPassword: false // state for toggling password visibility
+    showPassword: false 
   };
 
-  // Handle input changes for username, password, and role
   handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value, error: "" });
   };
 
-  // Toggle password visibility
   togglePassword = () => {
     this.setState((prevState) => ({ showPassword: !prevState.showPassword }));
   };
 
-  // Handle form submission
   handleSubmit = async (e) => {
     e.preventDefault();
     const { username, password, role } = this.state;
@@ -29,7 +26,17 @@ class Login extends Component {
       const response = await ApiService.login(username, password, role);
 
       if (response.success) {
-        this.props.onLogin(role, response.data);
+        // Map student response correctly
+        const userData =
+          role === "student"
+            ? {
+                student_id: response.data.student_id,
+                username: response.data.username,
+                first_login: response.data.first_login
+              }
+            : response.data;
+
+        this.props.onLogin(role, userData);
       } else {
         this.setState({ error: response.message });
       }
@@ -57,9 +64,7 @@ class Login extends Component {
           <form onSubmit={this.handleSubmit} className="mt-8 space-y-6">
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Username
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Username</label>
               <input
                 name="username"
                 type="text"
@@ -73,9 +78,7 @@ class Login extends Component {
 
             {/* Password */}
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
@@ -85,7 +88,6 @@ class Login extends Component {
                 placeholder="Enter your password"
                 className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
               />
-              {/* Show Password checkbox */}
               <div className="mt-2 flex items-center">
                 <input
                   type="checkbox"
@@ -94,17 +96,13 @@ class Login extends Component {
                   onChange={this.togglePassword}
                   className="mr-2"
                 />
-                <label htmlFor="showPasswordCheckbox" className="text-sm text-gray-300">
-                  Show Password
-                </label>
+                <label htmlFor="showPasswordCheckbox" className="text-sm text-gray-300">Show Password</label>
               </div>
             </div>
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Role
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Role</label>
               <select
                 name="role"
                 value={role}
@@ -119,7 +117,6 @@ class Login extends Component {
             {/* Error message */}
             {error && <p className="text-red-500 text-center mt-2">{error}</p>}
 
-            {/* Submit button */}
             <button
               type="submit"
               className="w-full py-3 mt-4 bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white font-semibold shadow-md transition"

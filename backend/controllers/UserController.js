@@ -1,4 +1,3 @@
-// backend/controllers/userController.js
 import { pool } from "../config/db.js";
 import bcrypt from "bcrypt";
 
@@ -22,8 +21,25 @@ export const loginUser = async (req, res) => {
       return res.json({ success: false, message: "Incorrect password" });
     }
 
-    // Send minimal user data back
-    res.json({ success: true, data: { id: user.id, username: user.username } });
+    // ✅ Send minimal user data back
+    if (role === "student") {
+      res.json({
+        success: true,
+        data: {
+          student_id: user.student_id, // fixed from user.id
+          username: user.username,
+          first_login: user.first_login,
+        },
+      });
+    } else if (role === "admin") {
+      res.json({
+        success: true,
+        data: {
+          id: user.id, // admin uses numeric id
+          username: user.username,
+        },
+      });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });

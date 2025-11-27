@@ -12,11 +12,16 @@ class App extends Component {
     const storedRole = localStorage.getItem("role");
     const storedStudentId = localStorage.getItem("studentId");
 
+    // Debug: log localStorage values on mount
+    console.log("App mount: storedUser", storedUser);
+    console.log("App mount: storedRole", storedRole);
+    console.log("App mount: storedStudentId", storedStudentId);
+
     if (storedUser && storedRole) {
       this.setState({
         user: JSON.parse(storedUser),
         role: storedRole,
-        studentId: storedStudentId,
+        studentId: storedStudentId || null,
         loading: false,
       });
     } else {
@@ -25,12 +30,27 @@ class App extends Component {
   }
 
   handleLogin = (role, userData) => {
+    const studentId = userData.student_id || null;
+
+    // Debug: log login response
+    console.log("handleLogin called with:", { role, userData, studentId });
+
     this.setState(
-      { user: userData, role, studentId: userData?.id || null },
+      { user: userData, role, studentId },
       () => {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("role", role);
-        if (role === "student") localStorage.setItem("studentId", userData.id);
+        if (role === "student" && studentId) {
+          localStorage.setItem("studentId", studentId);
+        }
+
+        // Debug: confirm after setState & localStorage
+        console.log("State after login:", this.state);
+        console.log("LocalStorage after login:", {
+          user: localStorage.getItem("user"),
+          role: localStorage.getItem("role"),
+          studentId: localStorage.getItem("studentId"),
+        });
       }
     );
   };
@@ -40,6 +60,8 @@ class App extends Component {
       localStorage.removeItem("user");
       localStorage.removeItem("role");
       localStorage.removeItem("studentId");
+      // Debug: confirm logout
+      console.log("Logged out, localStorage cleared");
     });
   };
 
@@ -55,11 +77,7 @@ class App extends Component {
           <Route
             path="/login"
             element={
-              !user ? (
-                <Login onLogin={this.handleLogin} />
-              ) : (
-                <Navigate to="/" replace />
-              )
+              !user ? <Login onLogin={this.handleLogin} /> : <Navigate to="/" replace />
             }
           />
 
@@ -92,11 +110,7 @@ class App extends Component {
             path="/"
             element={
               user ? (
-                role === "admin" ? (
-                  <Navigate to="/admin" replace />
-                ) : (
-                  <Navigate to="/student" replace />
-                )
+                role === "admin" ? <Navigate to="/admin" replace /> : <Navigate to="/student" replace />
               ) : (
                 <Navigate to="/login" replace />
               )
