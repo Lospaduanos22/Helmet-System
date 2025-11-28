@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ApiService from "../services/ApiService";
 import { useNavigate } from "react-router-dom";
+import ManageLockers from "./ManageLockers"; // <-- import the existing component
 
 // HOC to provide navigate to class component
 function withRouter(Component) {
@@ -9,76 +10,6 @@ function withRouter(Component) {
     return <Component {...props} navigate={navigate} />;
   };
 }
-
-// LockerGrid with global locker names
-class LockerGrid extends Component {
-  state = {
-    currentPage: 0,
-    lockers: [
-      { name: "Main Locker", slots: Array(25).fill(null) },
-      { name: "Backup Locker", slots: Array(25).fill(null) },
-      // more lockers
-    ],
-  };
-
-  handleNext = () => {
-    const totalPages = this.state.lockers.length;
-    this.setState({ currentPage: (this.state.currentPage + 1) % totalPages });
-  };
-
-  handlePrev = () => {
-    const totalPages = this.state.lockers.length;
-    this.setState({
-      currentPage: (this.state.currentPage - 1 + totalPages) % totalPages,
-    });
-  };
-
-  // ... handleCheckout, handleRenameLocker remain the same
-
-  render() {
-    const locker = this.state.lockers[this.state.currentPage];
-    return (
-      <div className="max-w-4xl mx-auto mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-white">{locker.name}</h2>
-        <div className="grid grid-cols-5 gap-3">
-          {locker.slots.map((slot, idx) => (
-            <button
-              key={idx}
-              onClick={() => this.handleCheckout(idx)}
-              className={`w-full p-6 rounded-xl font-bold transition shadow-lg text-center ${
-                slot?.taken ? "bg-red-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-              }`}
-            >
-              {locker.name}-{idx + 1} <br /> {slot?.taken ? "Checked Out" : "Available"}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex justify-between mt-6">
-          <button
-            onClick={this.handlePrev}
-            className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"
-          >
-            Previous Locker
-          </button>
-          <button
-            onClick={this.handleRenameLocker}
-            className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"
-          >
-            Rename Locker
-          </button>
-          <button
-            onClick={this.handleNext}
-            className="py-2 px-4 bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white"
-          >
-            Next Locker
-          </button>
-        </div>
-      </div>
-    );
-  }
-}
-
 
 // AdminDashboard
 class AdminDashboard extends Component {
@@ -137,23 +68,22 @@ class AdminDashboard extends Component {
     }
   };
 
- handleChangePassword = async (e) => {
-  e.preventDefault();
-  const { selectedStudentID, newPassword } = this.state;
+  handleChangePassword = async (e) => {
+    e.preventDefault();
+    const { selectedStudentID, newPassword } = this.state;
 
-  if (!selectedStudentID || !newPassword) return alert("Enter Student ID and new password");
-  if (newPassword.length < 8) return alert("Password must be at least 8 characters");
+    if (!selectedStudentID || !newPassword) return alert("Enter Student ID and new password");
+    if (newPassword.length < 8) return alert("Password must be at least 8 characters");
 
-  try {
-    const response = await ApiService.adminChangeStudentPassword(selectedStudentID, newPassword);
-    alert(response.message || "Password changed successfully");
-    this.setState({ selectedStudentID: "", newPassword: "", username: "" });
-  } catch (err) {
-    console.error(err);
-    alert(err.message || "Server error");
-  }
-};
-
+    try {
+      const response = await ApiService.adminChangeStudentPassword(selectedStudentID, newPassword);
+      alert(response.message || "Password changed successfully");
+      this.setState({ selectedStudentID: "", newPassword: "", username: "" });
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Server error");
+    }
+  };
 
   handleLogout = () => {
     this.props.onLogout();
@@ -202,27 +132,53 @@ class AdminDashboard extends Component {
               <form onSubmit={this.handleCreateStudent} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Student ID</label>
-                  <input name="studentID" type="text" value={studentID} onChange={this.handleChange} placeholder="Enter Student ID" className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                  <input
+                    name="studentID"
+                    type="text"
+                    value={studentID}
+                    onChange={this.handleChange}
+                    placeholder="Enter Student ID"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Username</label>
-                  <input name="username" type="text" value={username} onChange={this.handleChange} placeholder="Enter Username" className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                  <input
+                    name="username"
+                    type="text"
+                    value={username}
+                    onChange={this.handleChange}
+                    placeholder="Enter Username"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Admin Name</label>
-                  <input name="createdBy" type="text" value={createdBy} onChange={this.handleChange} placeholder="Enter Admin Name" className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                  <input
+                    name="createdBy"
+                    type="text"
+                    value={createdBy}
+                    onChange={this.handleChange}
+                    placeholder="Enter Admin Name"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
                 </div>
 
                 {message && <p className="text-center text-red-500 mt-2">{message}</p>}
 
-                <button type="submit" className="w-full py-3 mt-4 bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white font-semibold shadow-md transition">Create Student</button>
+                <button
+                  type="submit"
+                  className="w-full py-3 mt-4 bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white font-semibold shadow-md transition"
+                >
+                  Create Student
+                </button>
               </form>
             </div>
           )}
 
-          {activeTab === "manageLockers" && <LockerGrid adminName={createdBy} />}
+          {activeTab === "manageLockers" && <ManageLockers adminName={createdBy} />} {/* <-- use ManageLockers */}
 
           {activeTab === "manageStudents" && (
             <div className="w-full max-w-md bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl p-8">
@@ -230,7 +186,14 @@ class AdminDashboard extends Component {
               <form onSubmit={this.handleChangePassword} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Student ID</label>
-                  <input type="text" name="selectedStudentID" value={selectedStudentID} onChange={this.handleChange} placeholder="Enter Student ID" className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                  <input
+                    type="text"
+                    name="selectedStudentID"
+                    value={selectedStudentID}
+                    onChange={this.handleChange}
+                    placeholder="Enter Student ID"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
                 </div>
 
                 <div>
@@ -239,10 +202,34 @@ class AdminDashboard extends Component {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">New Password</label>
-                  <input type="password" name="newPassword" value={newPassword} onChange={this.handleChange} placeholder="Enter new password" className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                  <input
+                    type={this.state.showPassword ? "text" : "password"}
+                    name="newPassword"
+                    value={newPassword}
+                    onChange={this.handleChange}
+                    placeholder="Enter new password"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
+                  <div className="mt-2 flex items-center">
+                    <input
+                      type="checkbox"
+                      id="showPassword"
+                      checked={this.state.showPassword || false}
+                      onChange={() => this.setState({ showPassword: !this.state.showPassword })}
+                      className="mr-2 accent-indigo-500"
+                    />
+                    <label htmlFor="showPassword" className="text-white select-none">
+                      Show Password
+                    </label>
+                  </div>
                 </div>
 
-                <button type="submit" className="w-full py-3 mt-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold shadow-md transition">Update Password</button>
+                <button
+                  type="submit"
+                  className="w-full py-3 mt-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold shadow-md transition"
+                >
+                  Update Password
+                </button>
               </form>
             </div>
           )}

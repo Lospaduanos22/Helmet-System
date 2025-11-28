@@ -1,4 +1,3 @@
-// src/components/ChangePassword.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ApiService from "../services/ApiService";
@@ -13,7 +12,6 @@ export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
 
   if (!student) {
-    // If no student info, redirect to login
     navigate("/login");
     return null;
   }
@@ -28,14 +26,12 @@ export default function ChangePassword() {
     setError("");
 
     try {
-      // ✅ Send correct payload
+      // Only send newPassword for first login
       const response = await ApiService.changePassword(student.student_id, { newPassword });
 
       if (response.success) {
         alert("Password changed successfully!");
-        setNewPassword("");
-
-        // Redirect student to dashboard
+        student.first_login = 0; // update locally
         navigate("/student", { replace: true });
       } else {
         setError(response.message || "Failed to change password");

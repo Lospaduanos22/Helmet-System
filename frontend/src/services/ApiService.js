@@ -36,16 +36,24 @@ class ApiService {
     return result;
   }
 
-  async changePassword(studentId, payload) {
-    const res = await fetch(`${this.baseUrl}/students/change-password/${studentId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
-    return result;
+ async changePassword(studentId, payload) {
+  const res = await fetch(`${this.baseUrl}/students/change-password/${studentId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  let result;
+  try {
+    result = await res.json();
+  } catch (e) {
+    throw new Error(`Invalid JSON response from server. Status: ${res.status}`);
   }
+
+  if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+  return result;
+}
+
 
   async updateStudentProfile(studentId, payload) {
     const res = await fetch(`${this.baseUrl}/students/update/${studentId}`, {
