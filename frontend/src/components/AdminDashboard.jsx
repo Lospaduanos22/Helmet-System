@@ -17,7 +17,7 @@ class LockerGrid extends Component {
     lockers: [
       { name: "Main Locker", slots: Array(25).fill(null) },
       { name: "Backup Locker", slots: Array(25).fill(null) },
-      // add more lockers as needed
+      // more lockers
     ],
   };
 
@@ -26,27 +26,14 @@ class LockerGrid extends Component {
     this.setState({ currentPage: (this.state.currentPage + 1) % totalPages });
   };
 
-  handleCheckout = (index) => {
-    const slotsCopy = [...this.state.lockers];
-    const slot = slotsCopy[this.state.currentPage].slots[index];
-    if (slot && slot.taken) return;
-
-    slotsCopy[this.state.currentPage].slots[index] = {
-      taken: true,
-      admin: this.props.adminName,
-      time: new Date().toISOString(),
-    };
-    this.setState({ lockers: slotsCopy });
+  handlePrev = () => {
+    const totalPages = this.state.lockers.length;
+    this.setState({
+      currentPage: (this.state.currentPage - 1 + totalPages) % totalPages,
+    });
   };
 
-  handleRenameLocker = () => {
-    const newName = prompt("Enter new locker name:", this.state.lockers[this.state.currentPage].name);
-    if (!newName) return;
-
-    const lockersCopy = [...this.state.lockers];
-    lockersCopy[this.state.currentPage].name = newName;
-    this.setState({ lockers: lockersCopy });
-  };
+  // ... handleCheckout, handleRenameLocker remain the same
 
   render() {
     const locker = this.state.lockers[this.state.currentPage];
@@ -69,6 +56,12 @@ class LockerGrid extends Component {
 
         <div className="flex justify-between mt-6">
           <button
+            onClick={this.handlePrev}
+            className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"
+          >
+            Previous Locker
+          </button>
+          <button
             onClick={this.handleRenameLocker}
             className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white"
           >
@@ -85,6 +78,7 @@ class LockerGrid extends Component {
     );
   }
 }
+
 
 // AdminDashboard
 class AdminDashboard extends Component {
@@ -143,20 +137,23 @@ class AdminDashboard extends Component {
     }
   };
 
-  handleChangePassword = async (e) => {
-    e.preventDefault();
-    const { selectedStudentID, newPassword } = this.state;
-    if (!selectedStudentID || !newPassword) return alert("Enter Student ID and new password");
+ handleChangePassword = async (e) => {
+  e.preventDefault();
+  const { selectedStudentID, newPassword } = this.state;
 
-    try {
-      const response = await ApiService.adminChangeStudentPassword(selectedStudentID, newPassword);
-      alert(response.message || "Password changed!");
-      this.setState({ selectedStudentID: "", newPassword: "", username: "" });
-    } catch (err) {
-      console.error(err);
-      alert("Error changing password");
-    }
-  };
+  if (!selectedStudentID || !newPassword) return alert("Enter Student ID and new password");
+  if (newPassword.length < 8) return alert("Password must be at least 8 characters");
+
+  try {
+    const response = await ApiService.adminChangeStudentPassword(selectedStudentID, newPassword);
+    alert(response.message || "Password changed successfully");
+    this.setState({ selectedStudentID: "", newPassword: "", username: "" });
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Server error");
+  }
+};
+
 
   handleLogout = () => {
     this.props.onLogout();

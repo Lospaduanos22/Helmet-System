@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import AdminDashboard from "./components/AdminDashboard";
 import StudentDashboard from "./components/StudentDashboard";
+import ChangePassword from "./components/ChangePassword";
 
 class App extends Component {
   state = { user: null, role: null, studentId: null, loading: true };
@@ -12,7 +13,6 @@ class App extends Component {
     const storedRole = localStorage.getItem("role");
     const storedStudentId = localStorage.getItem("studentId");
 
-    // Debug: log localStorage values on mount
     console.log("App mount: storedUser", storedUser);
     console.log("App mount: storedRole", storedRole);
     console.log("App mount: storedStudentId", storedStudentId);
@@ -32,7 +32,6 @@ class App extends Component {
   handleLogin = (role, userData) => {
     const studentId = userData.student_id || null;
 
-    // Debug: log login response
     console.log("handleLogin called with:", { role, userData, studentId });
 
     this.setState(
@@ -40,11 +39,8 @@ class App extends Component {
       () => {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("role", role);
-        if (role === "student" && studentId) {
-          localStorage.setItem("studentId", studentId);
-        }
+        if (role === "student" && studentId) localStorage.setItem("studentId", studentId);
 
-        // Debug: confirm after setState & localStorage
         console.log("State after login:", this.state);
         console.log("LocalStorage after login:", {
           user: localStorage.getItem("user"),
@@ -60,28 +56,21 @@ class App extends Component {
       localStorage.removeItem("user");
       localStorage.removeItem("role");
       localStorage.removeItem("studentId");
-      // Debug: confirm logout
       console.log("Logged out, localStorage cleared");
     });
   };
 
   render() {
     const { user, role, studentId, loading } = this.state;
-
     if (loading) return <div className="text-white p-6">Loading...</div>;
 
     return (
       <BrowserRouter>
         <Routes>
-          {/* Login */}
           <Route
             path="/login"
-            element={
-              !user ? <Login onLogin={this.handleLogin} /> : <Navigate to="/" replace />
-            }
+            element={!user ? <Login onLogin={this.handleLogin} /> : <Navigate to="/" replace />}
           />
-
-          {/* Admin */}
           <Route
             path="/admin"
             element={
@@ -92,8 +81,6 @@ class App extends Component {
               )
             }
           />
-
-          {/* Student */}
           <Route
             path="/student"
             element={
@@ -104,8 +91,19 @@ class App extends Component {
               )
             }
           />
-
-          {/* Default */}
+          <Route
+            path="/update-password"
+            element={
+              studentId ? (
+                <ChangePassword
+                  studentId={studentId}
+                  onPasswordChanged={() => window.location.replace("/student")}
+                />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
           <Route
             path="/"
             element={
@@ -116,8 +114,6 @@ class App extends Component {
               )
             }
           />
-
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

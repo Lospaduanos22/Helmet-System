@@ -3,53 +3,71 @@ class ApiService {
     this.baseUrl = baseUrl;
   }
 
-  // Login
   async login(username, password, role) {
-    const res = await fetch(`${this.baseUrl}/login`, {
+    const res = await fetch(`${this.baseUrl}/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password, role }),
     });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return await res.json();
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
   }
 
-  // Create Student
   async createStudent(data) {
-    const res = await fetch("http://localhost:5000/api/students/create", {
+    const res = await fetch(`${this.baseUrl}/students/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        student_id: data.student_id, // must match backend key
+        student_id: data.student_id,
         username: data.username,
         createdBy: data.createdBy,
       }),
     });
-
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return await res.json();
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
   }
 
-  // Get student by ID
   async getStudent(studentId) {
-    const res = await fetch(`http://localhost:5000/api/students/${studentId}`);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return await res.json();
+    const res = await fetch(`${this.baseUrl}/students/${studentId}`);
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
   }
 
-  // Change password
-  async changePassword(studentId, newPassword) {
-    const res = await fetch(
-      `http://localhost:5000/api/students/change-password/${studentId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newPassword }),
-      }
-    );
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return await res.json();
+  async changePassword(studentId, payload) {
+    const res = await fetch(`${this.baseUrl}/students/change-password/${studentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
+  }
+
+  async updateStudentProfile(studentId, payload) {
+    const res = await fetch(`${this.baseUrl}/students/update/${studentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
+  }
+
+  async adminChangeStudentPassword(studentId, newPassword) {
+    const res = await fetch(`${this.baseUrl}/admin/change-student-password`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, newPassword }),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP error! status: ${res.status}`);
+    return result;
   }
 }
 
-export default new ApiService("http://localhost:5000/api/users");
+export default new ApiService("http://localhost:5000/api");
