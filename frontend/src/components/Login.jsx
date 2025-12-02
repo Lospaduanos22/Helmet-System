@@ -54,9 +54,9 @@ class Login extends Component {
         <div className="w-full max-w-sm bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl p-8">
           <div className="text-center">
             <img
-              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+              src="logo.png"
               alt="Logo"
-              className="mx-auto h-12 w-auto"
+              className="mx-auto h-15 w-auto"
             />
             <h2 className="mt-6 text-2xl font-bold text-white">Sign in to your account</h2>
           </div>

@@ -7,7 +7,7 @@ export const getAllLockers = async (req, res) => {
       SELECT l.*, s.username as student_name 
       FROM lockers l 
       LEFT JOIN students s ON l.student_id = s.student_id
-      ORDER BY locker_number ASC
+      ORDER BY l.locker_id ASC
     `);
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -15,32 +15,50 @@ export const getAllLockers = async (req, res) => {
   }
 };
 
-// 2. Add Locker (Admin Only)
+// 2. Add Locker Cluster (Creates 25 slots: Name-1 to Name-25)
 export const addLocker = async (req, res) => {
-  const { locker_number } = req.body;
+  const { locker_number } = req.body; // This acts as the Cluster Name (e.g., "Bunzel")
+  
+  if (!locker_number) {
+    return res.status(400).json({ success: false, message: "Locker cluster name is required" });
+  }
+
+  const connection = await pool.getConnection();
   try {
-    await pool.query("INSERT INTO lockers (locker_number) VALUES (?)", [locker_number]);
-    res.json({ success: true, message: "Locker added successfully" });
+    await connection.beginTransaction();
+
+    // Create 25 slots for this locker cluster
+    for (let i = 1; i <= 25; i++) {
+      // Format: "Bunzel-1", "Bunzel-2", etc.
+      const slotName = `${locker_number}-${i}`; 
+      await connection.query("INSERT INTO lockers (locker_number) VALUES (?)", [slotName]);
+    }
+
+    await connection.commit();
+    res.json({ success: true, message: `Locker cluster '${locker_number}' (25 slots) added successfully` });
   } catch (err) {
+    await connection.rollback();
     if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ success: false, message: "Locker number already exists" });
+      return res.status(400).json({ success: false, message: "A locker cluster with this name already exists." });
     }
     res.status(500).json({ success: false, message: err.message });
+  } finally {
+    connection.release();
   }
 };
 
-// 3. Delete Locker (Admin Only)
+// 3. Delete Locker (Individual Slot or cleanup)
 export const deleteLocker = async (req, res) => {
   const { locker_id } = req.params;
   try {
     await pool.query("DELETE FROM lockers WHERE locker_id = ?", [locker_id]);
-    res.json({ success: true, message: "Locker deleted successfully" });
+    res.json({ success: true, message: "Locker slot deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// 4. Student Reserve (Reserve a specific slot)
+// 4. Student Reserve
 export const reserveLocker = async (req, res) => {
   const { locker_id, student_id } = req.body;
 
@@ -79,12 +97,11 @@ export const reserveLocker = async (req, res) => {
   }
 };
 
-// 5. Admin Checkout (Release the locker)
+// 5. Admin Checkout
 export const adminCheckout = async (req, res) => {
   const { locker_id } = req.body;
 
   try {
-    // Get locker info first to know who was using it (for logging)
     const [locker] = await pool.query("SELECT * FROM lockers WHERE locker_id = ?", [locker_id]);
     
     if (!locker[0] || locker[0].status !== 'occupied') {
@@ -93,13 +110,11 @@ export const adminCheckout = async (req, res) => {
 
     const student_id = locker[0].student_id;
 
-    // Release locker
     await pool.query(
       "UPDATE lockers SET status = 'available', student_id = NULL WHERE locker_id = ?",
       [locker_id]
     );
 
-    // Log history
     await pool.query(
       "INSERT INTO deposits (locker_id, student_id, action_type) VALUES (?, ?, 'retrieve')",
       [locker_id, student_id]

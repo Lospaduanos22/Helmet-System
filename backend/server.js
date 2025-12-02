@@ -3,11 +3,11 @@ import cors from "cors";
 import studentRoutes from "./routes/studentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+// 1. Import the locker routes
+import lockerRoutes from "./routes/lockerRoutes.js"; 
 
 const app = express();
 
-// 1. ALLOW CORS
-// Allows connections from your Vite frontend
 app.use(cors({
   origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -16,19 +16,17 @@ app.use(cors({
 
 app.use(express.json());
 
-// 2. DEBUG LOGGING
-// Prints requests to the terminal so you can see if they arrive
 app.use((req, res, next) => {
   console.log(`📡 Request received: ${req.method} ${req.url}`);
   next();
 });
 
-// 3. ROUTES
+// 2. Add the route middleware here
 app.use("/api/students", studentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/lockers", lockerRoutes); // <--- THIS WAS MISSING
 
-// ⚠️ CHANGED TO 5001 TO AVOID MAC AIRPLAY CONFLICT
 const PORT = 5001;
 
 app.listen(PORT, '0.0.0.0', () => {
