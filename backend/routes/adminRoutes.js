@@ -1,13 +1,10 @@
 import express from "express";
-import { adminChangeStudentPassword, getLockers, renameLocker } from "../controllers/adminController.js";
+import adminController from "../controllers/adminController.js";
 
 const router = express.Router();
 
-// Admin resets student password
-router.put("/change-student-password", adminChangeStudentPassword);
-
-// Locker management
-router.get("/lockers", getLockers);
-router.put("/rename-locker", renameLocker);
+router.put("/change-student-password", (req, res) => adminController.adminChangeStudentPassword(req, res));
+router.get("/lockers", (req, res) => adminController.getLockers(req, res));
+router.put("/rename-locker", (req, res) => adminController.renameLocker(req, res));
 
 export default router;
